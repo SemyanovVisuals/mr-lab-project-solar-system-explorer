@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "ASolarSystem.h"
+#include "SolarSystemManager.h"
 
 // Sets default values
-AASolarSystem::AASolarSystem()
+ASolarSystemManager::ASolarSystemManager()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -12,14 +12,16 @@ AASolarSystem::AASolarSystem()
 }
 
 // Called when the game starts or when spawned
-void AASolarSystem::BeginPlay()
+void ASolarSystemManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+	UE_LOG(LogTemp, Warning, TEXT("SolarSystemManager BeginPlay called"));
 	
 }
 
 // Called every frame
-void AASolarSystem::Tick(float DeltaTime)
+void ASolarSystemManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 

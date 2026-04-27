@@ -3,13 +3,13 @@
 using UnrealBuildTool;
 using System.Collections.Generic;
 
-public class MRLab_ProjectTarget : TargetRules
+public class MRLab_FinalProjectTarget : TargetRules
 {
-	public MRLab_ProjectTarget(TargetInfo Target) : base(Target)
+	public MRLab_FinalProjectTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V5;
 
-		ExtraModuleNames.AddRange( new string[] { "MRLab_Project" } );
+		ExtraModuleNames.AddRange( new string[] { "MRLab_FinalProject" } );
 	}
 }

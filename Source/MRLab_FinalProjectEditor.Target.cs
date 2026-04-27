@@ -3,13 +3,13 @@
 using UnrealBuildTool;
 using System.Collections.Generic;
 
-public class MRLab_ProjectEditorTarget : TargetRules
+public class MRLab_FinalProjectEditorTarget : TargetRules
 {
-	public MRLab_ProjectEditorTarget(TargetInfo Target) : base(Target)
+	public MRLab_FinalProjectEditorTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V5;
 
-		ExtraModuleNames.AddRange( new string[] { "MRLab_Project" } );
+		ExtraModuleNames.AddRange( new string[] { "MRLab_FinalProject" } );
 	}
 }

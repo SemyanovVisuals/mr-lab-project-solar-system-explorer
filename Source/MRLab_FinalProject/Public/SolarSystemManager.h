@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "ASolarSystem.generated.h"
+#include "SolarSystemManager.generated.h"
 
 UCLASS()
-class MRLAB_PROJECT_API AASolarSystem : public AActor
+class MRLAB_FINALPROJECT_API ASolarSystemManager : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AASolarSystem();
+	ASolarSystemManager();
 
 protected:
 	// Called when the game starts or when spawned
