@@ -4,6 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+extern "C"
+{
+#include "../ExternalScripts/astronomy.h"
+}
 #include "SolarSystemManager.generated.h"
 
 UCLASS()
@@ -18,6 +22,14 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	astro_time_t CurrentAstroTime();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
+	UStaticMeshComponent* EarthMesh = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
+	float AUScale = 1000.0f;
 
 public:	
 	// Called every frame
