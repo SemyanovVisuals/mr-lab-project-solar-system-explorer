@@ -3,6 +3,11 @@
 
 #include "SolarSystemManager.h"
 
+extern "C"
+{
+#include "../ExternalScripts/astronomy.h"
+}
+
 // Sets default values
 ASolarSystemManager::ASolarSystemManager()
 {
@@ -17,6 +22,12 @@ void ASolarSystemManager::BeginPlay()
 	Super::BeginPlay();
 
 	UE_LOG(LogTemp, Warning, TEXT("SolarSystemManager BeginPlay called"));
+
+	const char* EarthName = Astronomy_BodyName(BODY_EARTH);
+	double EarthPeriod = Astronomy_PlanetOrbitalPeriod(BODY_EARTH);
+
+	UE_LOG(LogTemp, Warning, TEXT("Astronomy C test: body = %hs"), EarthName);
+	UE_LOG(LogTemp, Warning, TEXT("Earth orbital period = %f days"), EarthPeriod);
 	
 }
 
