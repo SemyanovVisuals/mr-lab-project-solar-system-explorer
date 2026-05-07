@@ -21,67 +21,71 @@ void ASolarSystemManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UE_LOG(LogTemp, Warning, TEXT("SolarSystemManager BeginPlay called"));
+	UE_LOG(LogTemp, Warning, TEXT("SolarSystemManager: BeginPlay"));
 
-	const char* EarthName = Astronomy_BodyName(BODY_EARTH);
-	double EarthPeriod = Astronomy_PlanetOrbitalPeriod(BODY_EARTH);
+    LoadMeshes();
 
-	UE_LOG(LogTemp, Warning, TEXT("Astronomy C test: body = %hs"), EarthName);
-	UE_LOG(LogTemp, Warning, TEXT("Earth orbital period = %f days"), EarthPeriod);
+    // Update positions 4 times / second
+    GetWorldTimerManager().SetTimer(
+        UpdateTimer,
+        this,
+        &ASolarSystemManager::UpdatePositions,
+        0.25f,
+        true
+    );
+}
 
-    // TODO: extract real time [year, month, day, hour, minute, second]
-    //astro_time_t Time = Astronomy_MakeTime(2026, 4, 27, 16, 33, 42.706);
-
-    UStaticMeshComponent* earthMesh =
-        Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Earth")));
-
+void ASolarSystemManager::UpdatePositions()
+{
     astro_time_t AstroTime = CurrentAstroTime();
 
-    astro_vector_t Earth = Astronomy_HelioVector(BODY_EARTH, AstroTime); // vector in AU
+    UpdateBody(mercuryMesh, BODY_MERCURY, AstroTime);
+    UpdateBody(venusMesh, BODY_VENUS, AstroTime);
+    UpdateBody(earthMesh, BODY_EARTH, AstroTime);
+    UpdateBody(moonMesh, BODY_MOON, AstroTime);
+    UpdateBody(marsMesh, BODY_MARS, AstroTime);
+    UpdateBody(jupiterMesh, BODY_JUPITER, AstroTime);
+    UpdateBody(saturnMesh, BODY_SATURN, AstroTime);
+    UpdateBody(uranusMesh, BODY_URANUS, AstroTime);
+    UpdateBody(neptuneMesh, BODY_NEPTUNE, AstroTime);
+}
 
-    if (Earth.status == ASTRO_SUCCESS)
-    {
-        UE_LOG(
-            LogTemp,
-            Warning,
-            TEXT("Earth heliocentric position: x=%f AU, y=%f AU, z=%f AU"),
-            Earth.x,
-            Earth.y,
-            Earth.z
-        );
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("Failed to calculate Earth position"));
-    }
+void ASolarSystemManager::UpdateBody(
+    UStaticMeshComponent* Mesh,
+    astro_body_t Body,
+    const astro_time_t& AstroTime)
+{
+    const astro_vector_t Vec =
+        Astronomy_HelioVector(Body, AstroTime);
 
-    if (earthMesh)
-    {
-        FVector earthPosition = FVector(
-            Earth.x * AUScale,
-            Earth.y * AUScale,
-            0.0f
-        );
+    const FVector Position(
+        Vec.x * AUScale,
+        -Vec.y * AUScale,
+        0.0
+    );
 
-        earthMesh->SetRelativeLocation(earthPosition);
+    Mesh->SetRelativeLocation(Position);
+}
 
-        UE_LOG(LogTemp, Warning, TEXT("Earth moved to: %s"), *earthPosition.ToString());
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("Could not find Earth mesh component"));
-    }
-	
+void ASolarSystemManager::LoadMeshes()
+{
+    mercuryMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Mercury")));
+    venusMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Venus")));
+    earthMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Earth")));
+    moonMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Moon")));
+    marsMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Mars")));
+    jupiterMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Jupiter")));
+    saturnMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Saturn")));
+    uranusMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Uranus")));
+    neptuneMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Neptune")));
 }
 
 astro_time_t ASolarSystemManager::CurrentAstroTime()
 {
     FDateTime NowUtc = FDateTime::UtcNow();
+    FString nowUtcString = NowUtc.ToString();
 
-    FDateTime nowUtc = FDateTime::UtcNow();
-    FString nowUtcString = nowUtc.ToString();
-
-    UE_LOG(LogTemp, Warning, TEXT("Current UTC: %s"), *nowUtcString);
+    //UE_LOG(LogTemp, Warning, TEXT("Current UTC: %s"), *nowUtcString);
 
     double Seconds =
         NowUtc.GetSecond() +
@@ -97,12 +101,5 @@ astro_time_t ASolarSystemManager::CurrentAstroTime()
     );
 
     return NowAstro;
-}
-
-// Called every frame
-void ASolarSystemManager::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 
