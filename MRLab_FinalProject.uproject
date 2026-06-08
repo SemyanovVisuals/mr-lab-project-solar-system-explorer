@@ -25,6 +25,10 @@
 		{
 			"Name": "Switchboard",
 			"Enabled": true
+		},
+		{
+			"Name": "DisplayClusterLaunch",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
