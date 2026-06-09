@@ -27,6 +27,8 @@ void ASolarSystemManager::BeginPlay()
 
     LoadMeshes();
 
+    UE_LOG(LogTemp, Warning, TEXT("SolarSystemManager: AUScale = %f"), AUScale);
+
     // Capture the real-world time once at startup — this is the "today" baseline.
     // All slider offsets are relative to this moment.
     BaseAstroTime = CurrentAstroTime();
@@ -91,15 +93,41 @@ void ASolarSystemManager::UpdateBody(
 
 void ASolarSystemManager::LoadMeshes()
 {
-    mercuryMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Mercury")));
-    venusMesh   = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Venus")));
-    earthMesh   = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Earth")));
-    moonMesh    = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Moon")));
-    marsMesh    = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Mars")));
-    jupiterMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Jupiter")));
-    saturnMesh  = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Saturn")));
-    uranusMesh  = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Uranus")));
-    neptuneMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Neptune")));
+    TArray<UStaticMeshComponent*> Meshes;
+    GetComponents<UStaticMeshComponent>(Meshes);
+
+    UE_LOG(LogTemp, Warning, TEXT("SolarSystemManager: GetComponents found %d StaticMeshComponent(s):"), Meshes.Num());
+    for (UStaticMeshComponent* M : Meshes)
+        UE_LOG(LogTemp, Warning, TEXT("  '%s'"), *M->GetName());
+
+    // Use StartsWith so names like "Mercury_GEN_VARIABLE" or "MercuryMesh" still match.
+    for (UStaticMeshComponent* Mesh : Meshes)
+    {
+        const FString Name = Mesh->GetName();
+        if      (Name.StartsWith(TEXT("Mercury"))) mercuryMesh = Mesh;
+        else if (Name.StartsWith(TEXT("Venus")))   venusMesh   = Mesh;
+        else if (Name.StartsWith(TEXT("Earth")))   earthMesh   = Mesh;
+        else if (Name.StartsWith(TEXT("Moon")))    moonMesh    = Mesh;
+        else if (Name.StartsWith(TEXT("Mars")))    marsMesh    = Mesh;
+        else if (Name.StartsWith(TEXT("Jupiter"))) jupiterMesh = Mesh;
+        else if (Name.StartsWith(TEXT("Saturn")))  saturnMesh  = Mesh;
+        else if (Name.StartsWith(TEXT("Uranus")))  uranusMesh  = Mesh;
+        else if (Name.StartsWith(TEXT("Neptune"))) neptuneMesh = Mesh;
+    }
+
+    auto Warn = [](const TCHAR* Body, const UStaticMeshComponent* Ptr)
+    {
+        if (!Ptr) UE_LOG(LogTemp, Warning, TEXT("SolarSystemManager: '%s' not matched — check component name in BP."), Body);
+    };
+    Warn(TEXT("Mercury"), mercuryMesh);
+    Warn(TEXT("Venus"),   venusMesh);
+    Warn(TEXT("Earth"),   earthMesh);
+    Warn(TEXT("Moon"),    moonMesh);
+    Warn(TEXT("Mars"),    marsMesh);
+    Warn(TEXT("Jupiter"), jupiterMesh);
+    Warn(TEXT("Saturn"),  saturnMesh);
+    Warn(TEXT("Uranus"),  uranusMesh);
+    Warn(TEXT("Neptune"), neptuneMesh);
 }
 
 astro_time_t ASolarSystemManager::CurrentAstroTime()
