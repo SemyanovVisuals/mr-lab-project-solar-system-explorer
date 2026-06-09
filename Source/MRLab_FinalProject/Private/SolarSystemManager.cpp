@@ -2,6 +2,8 @@
 
 
 #include "SolarSystemManager.h"
+#include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 extern "C"
 {
@@ -25,28 +27,46 @@ void ASolarSystemManager::BeginPlay()
 
     LoadMeshes();
 
-    // Update positions 4 times / second
-    GetWorldTimerManager().SetTimer(
-        UpdateTimer,
-        this,
-        &ASolarSystemManager::UpdatePositions,
-        0.25f,
-        true
-    );
+    // Capture the real-world time once at startup — this is the "today" baseline.
+    // All slider offsets are relative to this moment.
+    BaseAstroTime = CurrentAstroTime();
+
+    // Show the solar system at today's positions immediately (no repeating timer needed).
+    UpdatePositions(BaseAstroTime);
+
+    // Create and show the time slider widget if a class has been assigned.
+    if (TimeSliderWidgetClass)
+    {
+        APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+        if (PC)
+        {
+            UUserWidget* Widget = CreateWidget<UUserWidget>(PC, TimeSliderWidgetClass);
+            if (Widget)
+            {
+                Widget->AddToViewport();
+                SliderWidget = Widget;
+            }
+        }
+    }
 }
 
-void ASolarSystemManager::UpdatePositions()
+void ASolarSystemManager::SetSimulatedOffsetYears(float OffsetYears)
 {
-    astro_time_t AstroTime = CurrentAstroTime();
+    const double OffsetDays = static_cast<double>(OffsetYears) * 365.25;
+    const astro_time_t SimulatedTime = Astronomy_AddDays(BaseAstroTime, OffsetDays);
+    UpdatePositions(SimulatedTime);
+}
 
+void ASolarSystemManager::UpdatePositions(const astro_time_t& AstroTime)
+{
     UpdateBody(mercuryMesh, BODY_MERCURY, AstroTime);
-    UpdateBody(venusMesh, BODY_VENUS, AstroTime);
-    UpdateBody(earthMesh, BODY_EARTH, AstroTime);
-    UpdateBody(moonMesh, BODY_MOON, AstroTime);
-    UpdateBody(marsMesh, BODY_MARS, AstroTime);
+    UpdateBody(venusMesh,   BODY_VENUS,   AstroTime);
+    UpdateBody(earthMesh,   BODY_EARTH,   AstroTime);
+    UpdateBody(moonMesh,    BODY_MOON,    AstroTime);
+    UpdateBody(marsMesh,    BODY_MARS,    AstroTime);
     UpdateBody(jupiterMesh, BODY_JUPITER, AstroTime);
-    UpdateBody(saturnMesh, BODY_SATURN, AstroTime);
-    UpdateBody(uranusMesh, BODY_URANUS, AstroTime);
+    UpdateBody(saturnMesh,  BODY_SATURN,  AstroTime);
+    UpdateBody(uranusMesh,  BODY_URANUS,  AstroTime);
     UpdateBody(neptuneMesh, BODY_NEPTUNE, AstroTime);
 }
 
@@ -55,6 +75,8 @@ void ASolarSystemManager::UpdateBody(
     astro_body_t Body,
     const astro_time_t& AstroTime)
 {
+    if (!Mesh) return;
+
     const astro_vector_t Vec =
         Astronomy_HelioVector(Body, AstroTime);
 
@@ -70,28 +92,25 @@ void ASolarSystemManager::UpdateBody(
 void ASolarSystemManager::LoadMeshes()
 {
     mercuryMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Mercury")));
-    venusMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Venus")));
-    earthMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Earth")));
-    moonMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Moon")));
-    marsMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Mars")));
+    venusMesh   = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Venus")));
+    earthMesh   = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Earth")));
+    moonMesh    = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Moon")));
+    marsMesh    = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Mars")));
     jupiterMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Jupiter")));
-    saturnMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Saturn")));
-    uranusMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Uranus")));
+    saturnMesh  = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Saturn")));
+    uranusMesh  = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Uranus")));
     neptuneMesh = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Neptune")));
 }
 
 astro_time_t ASolarSystemManager::CurrentAstroTime()
 {
     FDateTime NowUtc = FDateTime::UtcNow();
-    FString nowUtcString = NowUtc.ToString();
-
-    //UE_LOG(LogTemp, Warning, TEXT("Current UTC: %s"), *nowUtcString);
 
     double Seconds =
         NowUtc.GetSecond() +
         NowUtc.GetMillisecond() / 1000.0;
 
-    astro_time_t NowAstro = Astronomy_MakeTime(
+    return Astronomy_MakeTime(
         NowUtc.GetYear(),
         NowUtc.GetMonth(),
         NowUtc.GetDay(),
@@ -99,7 +118,4 @@ astro_time_t ASolarSystemManager::CurrentAstroTime()
         NowUtc.GetMinute(),
         Seconds
     );
-
-    return NowAstro;
 }
-
