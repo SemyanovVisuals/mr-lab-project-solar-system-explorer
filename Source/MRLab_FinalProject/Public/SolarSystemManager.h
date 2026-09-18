@@ -10,24 +10,37 @@ extern "C"
 }
 #include "SolarSystemManager.generated.h"
 
+class UTimeSliderWidget;
+
 UCLASS()
 class MRLAB_FINALPROJECT_API ASolarSystemManager : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	ASolarSystemManager();
 
+	// Called by the time slider widget when the user drags the slider.
+	// OffsetYears: 0 = today, -100 = 100 years in the past, +100 = 100 years in the future.
+	UFUNCTION(BlueprintCallable, Category = "Solar System")
+	void SetSimulatedOffsetYears(float OffsetYears);
+
+	// Widget Blueprint class to instantiate. Set this in BP_SolarSystemManager class defaults.
+	UPROPERTY(EditDefaultsOnly, Category = "Solar System|UI")
+	TSubclassOf<UUserWidget> TimeSliderWidgetClass;
+
 private:
 
-	FTimerHandle UpdateTimer;
+	astro_time_t BaseAstroTime;
+
+	TWeakObjectPtr<UUserWidget> SliderWidget;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	void UpdatePositions();
+	void UpdatePositions(const astro_time_t& AstroTime);
 
 	void LoadMeshes();
 
