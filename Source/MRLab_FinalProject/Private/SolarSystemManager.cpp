@@ -27,7 +27,7 @@ void ASolarSystemManager::BeginPlay()
 
     LoadMeshes();
 
-    UE_LOG(LogTemp, Warning, TEXT("SolarSystemManager: AUScale = %f"), AUScale);
+    UE_LOG(LogTemp, Warning, TEXT("SolarSystemManager: AUScale = %f, DistanceExponent = %f"), AUScale, DistanceExponent);
 
     // Capture the real-world time once at startup — this is the "today" baseline.
     // All slider offsets are relative to this moment.
@@ -82,9 +82,15 @@ void ASolarSystemManager::UpdateBody(
     const astro_vector_t Vec =
         Astronomy_HelioVector(Body, AstroTime);
 
+    const double R_AU = FMath::Sqrt(Vec.x * Vec.x + Vec.y * Vec.y);
+    const double CompressedFactor =
+        (R_AU > UE_DOUBLE_SMALL_NUMBER)
+            ? FMath::Pow(R_AU, DistanceExponent) / R_AU
+            : 0.0;
+
     const FVector Position(
-        Vec.x * AUScale,
-        -Vec.y * AUScale,
+        Vec.x * CompressedFactor * AUScale,
+        -Vec.y * CompressedFactor * AUScale,
         0.0
     );
 

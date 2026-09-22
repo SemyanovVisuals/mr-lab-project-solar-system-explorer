@@ -81,4 +81,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
 	float AUScale = 1000.0f;
+
+	// Radius compression exponent applied before AUScale: r' = r^DistanceExponent.
+	// 1.0 = true linear distances (original behavior). Lower values pull outer
+	// planets in much more aggressively than inner ones, keeping angle/phase exact.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System", meta = (ClampMin = "0.05", ClampMax = "1.0"))
+	float DistanceExponent = 0.4f;
 };
