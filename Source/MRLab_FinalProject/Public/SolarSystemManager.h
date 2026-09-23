@@ -53,6 +53,9 @@ protected:
 	astro_time_t CurrentAstroTime();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
+	UStaticMeshComponent* sunMesh = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
 	UStaticMeshComponent* mercuryMesh = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
@@ -87,4 +90,10 @@ protected:
 	// planets in much more aggressively than inner ones, keeping angle/phase exact.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System", meta = (ClampMin = "0.05", ClampMax = "1.0"))
 	float DistanceExponent = 0.4f;
+
+	// Radius compression exponent applied relative to the Sun: visualScale = sunScale * (realRadius/sunRadius)^RadiusExponent.
+	// 1.0 = true linear real-world radii (Sun ~109x Earth). Lower values compress the
+	// range so small bodies stay visible next to the Sun while preserving ordering.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System", meta = (ClampMin = "0.05", ClampMax = "1.0"))
+	float RadiusExponent = 0.35f;
 };

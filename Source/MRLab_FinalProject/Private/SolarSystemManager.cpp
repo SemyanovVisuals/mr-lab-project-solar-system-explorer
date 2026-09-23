@@ -10,6 +10,24 @@ extern "C"
 #include "../ExternalScripts/astronomy.h"
 }
 
+static double GetBodyRadiusKm(astro_body_t Body)
+{
+    switch (Body)
+    {
+        case BODY_SUN:     return SUN_RADIUS_KM;
+        case BODY_MERCURY: return MERCURY_EQUATORIAL_RADIUS_KM;
+        case BODY_VENUS:   return VENUS_RADIUS_KM;
+        case BODY_EARTH:   return EARTH_EQUATORIAL_RADIUS_KM;
+        case BODY_MOON:    return MOON_EQUATORIAL_RADIUS_KM;
+        case BODY_MARS:    return MARS_EQUATORIAL_RADIUS_KM;
+        case BODY_JUPITER: return JUPITER_EQUATORIAL_RADIUS_KM;
+        case BODY_SATURN:  return SATURN_EQUATORIAL_RADIUS_KM;
+        case BODY_URANUS:  return URANUS_EQUATORIAL_RADIUS_KM;
+        case BODY_NEPTUNE: return NEPTUNE_EQUATORIAL_RADIUS_KM;
+        default:           return 0.0;
+    }
+}
+
 // Sets default values
 ASolarSystemManager::ASolarSystemManager()
 {
@@ -95,6 +113,15 @@ void ASolarSystemManager::UpdateBody(
     );
 
     Mesh->SetRelativeLocation(Position);
+
+    const double BodyRadiusKm = GetBodyRadiusKm(Body);
+    if (BodyRadiusKm > 0.0)
+    {
+        const double RadiusRatio = BodyRadiusKm / SUN_RADIUS_KM;
+        const double VisualRatio = FMath::Pow(RadiusRatio, RadiusExponent);
+        const FVector SunScale = sunMesh ? sunMesh->GetRelativeScale3D() : FVector(1.0);
+        Mesh->SetRelativeScale3D(SunScale * VisualRatio);
+    }
 }
 
 void ASolarSystemManager::LoadMeshes()
@@ -110,7 +137,8 @@ void ASolarSystemManager::LoadMeshes()
     for (UStaticMeshComponent* Mesh : Meshes)
     {
         const FString Name = Mesh->GetName();
-        if      (Name.StartsWith(TEXT("Mercury"))) mercuryMesh = Mesh;
+        if      (Name.StartsWith(TEXT("Sun")))     sunMesh     = Mesh;
+        else if (Name.StartsWith(TEXT("Mercury"))) mercuryMesh = Mesh;
         else if (Name.StartsWith(TEXT("Venus")))   venusMesh   = Mesh;
         else if (Name.StartsWith(TEXT("Earth")))   earthMesh   = Mesh;
         else if (Name.StartsWith(TEXT("Moon")))    moonMesh    = Mesh;
@@ -125,6 +153,7 @@ void ASolarSystemManager::LoadMeshes()
     {
         if (!Ptr) UE_LOG(LogTemp, Warning, TEXT("SolarSystemManager: '%s' not matched — check component name in BP."), Body);
     };
+    Warn(TEXT("Sun"),     sunMesh);
     Warn(TEXT("Mercury"), mercuryMesh);
     Warn(TEXT("Venus"),   venusMesh);
     Warn(TEXT("Earth"),   earthMesh);
