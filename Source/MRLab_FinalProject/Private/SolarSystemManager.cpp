@@ -4,6 +4,24 @@
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 
+static double GetBodyRadiusKm(astro_body_t Body)
+{
+    switch (Body)
+    {
+        case BODY_SUN:     return SUN_RADIUS_KM;
+        case BODY_MERCURY: return MERCURY_EQUATORIAL_RADIUS_KM;
+        case BODY_VENUS:   return VENUS_RADIUS_KM;
+        case BODY_EARTH:   return EARTH_EQUATORIAL_RADIUS_KM;
+        case BODY_MOON:    return MOON_EQUATORIAL_RADIUS_KM;
+        case BODY_MARS:    return MARS_EQUATORIAL_RADIUS_KM;
+        case BODY_JUPITER: return JUPITER_EQUATORIAL_RADIUS_KM;
+        case BODY_SATURN:  return SATURN_EQUATORIAL_RADIUS_KM;
+        case BODY_URANUS:  return URANUS_EQUATORIAL_RADIUS_KM;
+        case BODY_NEPTUNE: return NEPTUNE_EQUATORIAL_RADIUS_KM;
+        default:           return 0.0;
+    }
+}
+
 // Sets default values
 ASolarSystemManager::ASolarSystemManager()
 {
@@ -21,7 +39,7 @@ void ASolarSystemManager::BeginPlay()
 
 	CollectPlanets();
 
-	UE_LOG(LogTemp, Warning, TEXT("SolarSystemManager: AUScale = %f"), AUScale);
+    UE_LOG(LogTemp, Warning, TEXT("SolarSystemManager: AUScale = %f, DistanceExponent = %f"), AUScale, DistanceExponent);
 
 	// Capture the real-world time once at startup — this is the "today" baseline.
 	// All slider offsets are relative to this moment.
@@ -84,13 +102,30 @@ void ASolarSystemManager::UpdateBody(APlanetBase* Planet, const astro_time_t& As
 	const astro_vector_t Vec = Astronomy_HelioVector(ToAstroBody(Planet->Body), AstroTime);
 	if (Vec.status != ASTRO_SUCCESS) return;
 
+	const double R_AU = FMath::Sqrt(Vec.x * Vec.x + Vec.y * Vec.y);
+	const double CompressedFactor =
+		(R_AU > UE_DOUBLE_SMALL_NUMBER)
+			? FMath::Pow(R_AU, DistanceExponent) / R_AU
+			: 0.0;
+
 	const FVector Position(
-		Vec.x * AUScale,
-		-Vec.y * AUScale,
+		Vec.x * CompressedFactor * AUScale,
+		-Vec.y * CompressedFactor * AUScale,
 		0.0
 	);
 
 	Planet->SetActorRelativeLocation(Position);
+
+	const double BodyRadiusKm = GetBodyRadiusKm(ToAstroBody(Planet->Body));
+	if (BodyRadiusKm > 0.0 && Planet->Mesh)
+	{
+		const double RadiusRatio = BodyRadiusKm / SUN_RADIUS_KM;
+		const double VisualRatio = FMath::Pow(RadiusRatio, RadiusExponent);
+		const FVector SunScale = (SunPlanet && SunPlanet->Mesh)
+			? SunPlanet->Mesh->GetRelativeScale3D()
+			: FVector(1.0);
+		Planet->Mesh->SetRelativeScale3D(SunScale * VisualRatio);
+	}
 }
 
 astro_body_t ASolarSystemManager::ToAstroBody(EPlanetBody Body)
