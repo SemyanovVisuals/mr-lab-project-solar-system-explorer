@@ -64,6 +64,9 @@ protected:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Solar System")
 	TArray<APlanetBase*> Planets;
 
+	UPROPERTY()
+	APlanetBase* SunPlanet = nullptr;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
 	float AUScale = 1000.0f;
 
