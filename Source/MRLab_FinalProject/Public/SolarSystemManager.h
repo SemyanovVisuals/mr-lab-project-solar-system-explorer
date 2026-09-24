@@ -36,6 +36,18 @@ private:
 
 	TWeakObjectPtr<UUserWidget> SliderWidget;
 
+	// Resolved by name from the Blueprint's components in LoadMeshes(); not exposed in Details.
+	UStaticMeshComponent* sunMesh     = nullptr;
+	UStaticMeshComponent* mercuryMesh = nullptr;
+	UStaticMeshComponent* venusMesh   = nullptr;
+	UStaticMeshComponent* earthMesh   = nullptr;
+	UStaticMeshComponent* moonMesh    = nullptr;
+	UStaticMeshComponent* marsMesh    = nullptr;
+	UStaticMeshComponent* jupiterMesh = nullptr;
+	UStaticMeshComponent* saturnMesh  = nullptr;
+	UStaticMeshComponent* uranusMesh  = nullptr;
+	UStaticMeshComponent* neptuneMesh = nullptr;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -51,36 +63,6 @@ protected:
 	);
 
 	astro_time_t CurrentAstroTime();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* sunMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* mercuryMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* venusMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* earthMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* moonMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* marsMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* jupiterMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* saturnMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* uranusMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* neptuneMesh = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
 	float AUScale = 1000.0f;
