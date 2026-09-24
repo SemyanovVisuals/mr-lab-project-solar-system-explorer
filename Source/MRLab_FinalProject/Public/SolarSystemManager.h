@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "PlanetBase.h"
 extern "C"
 {
 #include "../ExternalScripts/astronomy.h"
@@ -18,7 +19,6 @@ class MRLAB_FINALPROJECT_API ASolarSystemManager : public AActor
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
 	ASolarSystemManager();
 
 	// Called by the time slider widget when the user drags the slider.
@@ -30,54 +30,27 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Solar System|UI")
 	TSubclassOf<UUserWidget> TimeSliderWidgetClass;
 
-private:
+	// All spawned planets — loop over this for "do X on every planet" logic.
+	UFUNCTION(BlueprintPure, Category = "Solar System")
+	const TArray<APlanetBase*>& GetPlanets() const { return Planets; }
 
+private:
 	astro_time_t BaseAstroTime;
 
 	TWeakObjectPtr<UUserWidget> SliderWidget;
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void CollectPlanets();
 	void UpdatePositions(const astro_time_t& AstroTime);
+	void UpdateBody(APlanetBase* Planet, const astro_time_t& AstroTime);
 
-	void LoadMeshes();
-
-	void UpdateBody(
-		UStaticMeshComponent* Mesh,
-		astro_body_t Body,
-		const astro_time_t& AstroTime
-	);
-
+	static astro_body_t ToAstroBody(EPlanetBody Body);
 	astro_time_t CurrentAstroTime();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* mercuryMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* venusMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* earthMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* moonMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* marsMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* jupiterMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* saturnMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* uranusMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
-	UStaticMeshComponent* neptuneMesh = nullptr;
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Solar System")
+	TArray<APlanetBase*> Planets;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Solar System")
 	float AUScale = 1000.0f;
