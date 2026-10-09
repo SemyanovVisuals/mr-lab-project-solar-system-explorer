@@ -28,4 +28,10 @@ void APlanetBase::BeginPlay()
 	
 }
 
-
+void APlanetBase::SetHighlighted(bool bHighlighted)
+{
+	if (Mesh)
+	{
+		Mesh->SetOverlayMaterial(bHighlighted ? HighlightOverlayMaterial : nullptr);
+	}
+}

@@ -28,6 +28,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet", meta = (ExposeOnSpawn = true))
 	UMaterialInterface* PlanetMaterial = nullptr;
 
+	UFUNCTION(BlueprintCallable, Category = "Planet")
+	void SetHighlighted(bool bHighlighted);
+
+	UPROPERTY(EditAnywhere, Category = "Planet|Highlight")
+	UMaterialInterface* HighlightOverlayMaterial = nullptr;
+
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 protected:
