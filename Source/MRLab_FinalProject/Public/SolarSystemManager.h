@@ -34,6 +34,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Solar System")
 	const TArray<APlanetBase*>& GetPlanets() const { return Planets; }
 
+	UFUNCTION(BlueprintCallable, meta = (BlueprintPure = false), Category = "Solar System")
+	APlanetBase* FindPlanetInCone(FVector Origin, FVector Direction,
+	float ConeHalfAngleDeg, float MaxDistance) const;
+
 private:
 	astro_time_t BaseAstroTime;
 

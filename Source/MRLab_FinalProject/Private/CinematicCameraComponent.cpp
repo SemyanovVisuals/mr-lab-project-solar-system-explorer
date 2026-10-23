@@ -63,7 +63,7 @@ void UCinematicCameraComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		ApplyCamera(Center, FMath::Lerp(StartDistance, EndDistance, Eased),
 			StartAzimuth, StartElevation, 0.0, 0.0);
 
-		if (Alpha >= 1.0) Finish();
+		if (Alpha >= 1.0 && Elapsed >= AlignDuration) Finish();
 	}
 	else // FlyBy
 	{
@@ -112,6 +112,7 @@ bool UCinematicCameraComponent::BeginCinematic(APlanetBase* Planet, EMode NewMod
 
 	// Fix the orbit basis for the whole cinematic.
 	GetOrbitBasis(BasisU, BasisV, BasisAxis);
+	StartRigRotation = Pawn->GetActorQuat();
 
 	StartAzimuth = FMath::RadiansToDegrees(FMath::Atan2(Offset | BasisV, Offset | BasisU));
 	StartElevation = FMath::RadiansToDegrees(FMath::Asin(FMath::Clamp((Offset | BasisAxis) / StartDistance, -1.0, 1.0)));
@@ -176,11 +177,16 @@ void UCinematicCameraComponent::ApplyCamera(const FVector& Center, double Distan
 		: FRotationMatrix::MakeFromXY(Forward, RightSign * BasisAxis).ToQuat();
 	const FQuat NewQuat = FQuat::Slerp(WorldFrame, OrbitFrame, FMath::Clamp(FrameBlend, 0.0, 1.0));
 
+	// Turn smoothly from the rotation at the start of the cinematic, instead of snapping.
+	const float AlignAlpha = (AlignDuration > 0.0f) ? FMath::Clamp(Elapsed / AlignDuration, 0.0f, 1.0f) : 1.0f;
+	const float AlignEased = FMath::InterpEaseInOut(0.0f, 1.0f, AlignAlpha, 2.0f);
+	const FQuat FinalQuat = FQuat::Slerp(StartRigRotation, NewQuat, AlignEased);
+
 	// NewLocation is where the eye should be; place the rig so the eye lands there.
-	const FTransform NewRigTransform(NewQuat, FVector::ZeroVector, Pawn->GetActorScale3D());
+	const FTransform NewRigTransform(FinalQuat, FVector::ZeroVector, Pawn->GetActorScale3D());
 	const FVector NewRigLocation = NewLocation - NewRigTransform.TransformVector(EyeLocalOffset);
 
-	Pawn->SetActorLocationAndRotation(NewRigLocation, NewQuat);
+	Pawn->SetActorLocationAndRotation(NewRigLocation, FinalQuat);
 }
 
 void UCinematicCameraComponent::Finish()

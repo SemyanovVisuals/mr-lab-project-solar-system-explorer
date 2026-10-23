@@ -36,6 +36,13 @@ public:
 
 	virtual void OnConstruction(const FTransform& Transform) override;
 
+	UFUNCTION(BlueprintPure, Category = "Planet")
+	float GetRadius() const;
+
+	// Distance from the planet's center at which it fills the given fraction of the screen height.
+	UFUNCTION(BlueprintPure, Category = "Planet")
+	float GetViewDistanceForFill(float Fill, float ScreenHalfHeight, float ViewerToScreenDistance) const;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

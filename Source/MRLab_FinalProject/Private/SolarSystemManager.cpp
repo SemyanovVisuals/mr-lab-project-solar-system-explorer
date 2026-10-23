@@ -163,3 +163,49 @@ astro_time_t ASolarSystemManager::CurrentAstroTime()
         Seconds
     );
 }
+
+APlanetBase* ASolarSystemManager::FindPlanetInCone(FVector Origin, FVector Direction,
+	float ConeHalfAngleDeg, float MaxDistance) const
+{
+	const FVector Dir = Direction.GetSafeNormal();
+	if (Dir.IsNearlyZero()) return nullptr;
+
+	const double ConeHalfAngle = FMath::DegreesToRadians(ConeHalfAngleDeg);
+
+	APlanetBase* Best = nullptr;
+	double BestEdgeAngle = TNumericLimits<double>::Max();
+	double BestDistance = TNumericLimits<double>::Max();
+
+	for (APlanetBase* Planet : Planets)
+	{
+		if (!Planet || !Planet->Mesh) continue;
+
+		const FVector ToPlanet = Planet->GetActorLocation() - Origin;
+		const double Distance = ToPlanet.Size();
+		if (Distance < KINDA_SMALL_NUMBER || Distance > MaxDistance) continue;
+
+		const double AngleToCenter = FMath::Acos(FMath::Clamp(Dir | (ToPlanet / Distance), -1.0, 1.0));
+
+		// How large the planet appears from here (half of its visible size).
+		const double Radius = Planet->Mesh->Bounds.BoxExtent.GetMax();
+		const double AngularRadius = (Radius >= Distance) ? PI : FMath::Asin(Radius / Distance);
+
+		// 0 when looking at the planet's disk, otherwise the angle to its nearest edge.
+		const double AngleToEdge = FMath::Max(0.0, AngleToCenter - AngularRadius);
+		if (AngleToEdge > ConeHalfAngle) continue;
+
+		// Prefer the planet closest to the view direction; on a tie, the nearer one.
+		const bool bBetterAngle = AngleToEdge < BestEdgeAngle - KINDA_SMALL_NUMBER;
+		const bool bSameAngleButCloser =
+			FMath::IsNearlyEqual(AngleToEdge, BestEdgeAngle) && Distance < BestDistance;
+
+		if (bBetterAngle || bSameAngleButCloser)
+		{
+			Best = Planet;
+			BestEdgeAngle = AngleToEdge;
+			BestDistance = Distance;
+		}
+	}
+
+	return Best;
+}

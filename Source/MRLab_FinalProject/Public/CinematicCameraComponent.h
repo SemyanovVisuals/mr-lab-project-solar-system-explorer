@@ -78,6 +78,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cinematic|Fly-By")
 	EOrbitAxis OrbitAxis = EOrbitAxis::Y;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cinematic", meta = (ClampMin = "0.0"))
+	float AlignDuration = 1.5f;
+
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 protected:
@@ -100,6 +103,7 @@ private:
 	FVector BasisV = FVector::YAxisVector;
 	FVector BasisAxis = FVector::ZAxisVector;
 	double RightSign = 1.0;
+	FQuat StartRigRotation = FQuat::Identity;
 
 	FVector EyeLocalOffset = FVector::ZeroVector;
 
