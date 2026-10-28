@@ -129,6 +129,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting")
 	double ScreenHalfHeight = 150.0;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting")
+	double ScreenHalfWidth = 250.0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting")
+	double CornerMargin = 75.0;
+
 	// Half-angle of the selection cone, in degrees.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting")
 	double ConeHalfAngle = 5.0;

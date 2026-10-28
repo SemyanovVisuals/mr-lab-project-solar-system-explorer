@@ -29,7 +29,7 @@ public:
 
 	// Smoothly moves the camera towards the planet until TargetDistance (from the planet's center).
 	UFUNCTION(BlueprintCallable, Category = "Cinematic")
-	void StartAutoZoom(APlanetBase* Planet, float TargetDistance);
+	void StartAutoZoom(APlanetBase* Planet, float TargetDistance, FVector2D ScreenAimOffset);
 
 	// Full fly-by: approach, 360° orbit with look-ahead, then end at ReturnDistance.
 	UFUNCTION(BlueprintCallable, Category = "Cinematic")
@@ -43,6 +43,14 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Cinematic")
 	FOnCinematicFinished OnFlyByFinished;
+
+	// The tracked view point (NDC DefaultViewPoint). If not set, the pawn's origin is used.
+	UPROPERTY(BlueprintReadWrite, Category = "Cinematic")
+	USceneComponent* ViewPoint = nullptr;
+
+
+	UPROPERTY(BlueprintReadWrite, Category = "Cinematic")
+	USceneComponent* ScreenCenter = nullptr;
 
 	// --- Auto zoom settings ---
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cinematic|Auto Zoom", meta = (ClampMin = "0.1"))
@@ -70,10 +78,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cinematic|Fly-By")
 	bool bReverseDirection = false;
-
-	// The tracked view point (NDC DefaultViewPoint). If not set, the pawn's origin is used.
-	UPROPERTY(BlueprintReadWrite, Category = "Cinematic")
-	USceneComponent* ViewPoint = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cinematic|Fly-By")
 	EOrbitAxis OrbitAxis = EOrbitAxis::Y;
@@ -106,6 +110,8 @@ private:
 	FQuat StartRigRotation = FQuat::Identity;
 
 	FVector EyeLocalOffset = FVector::ZeroVector;
+	FQuat ViewLocalRotation = FQuat::Identity;
+	FVector2D AimOffset = FVector2D::ZeroVector;
 
 	APawn* GetControlledPawn() const;
 	bool BeginCinematic(APlanetBase* Planet, EMode NewMode);

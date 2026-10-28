@@ -1,6 +1,7 @@
 #include "MyPlayerController.h"
 #include "CinematicCameraComponent.h"
 #include "PlanetBase.h"
+#include "SharedMathLibrary.h"
 #include "GameFramework/Pawn.h"
 #include "SolarSystemManager.h"
 #include "Kismet/GameplayStatics.h"
@@ -254,7 +255,9 @@ void AMyPlayerController::OrbitTarget(const FVector2D& Input, float ElapsedSecon
 	const FQuat OldDir = FRotationMatrix::MakeFromX(Focus - EyeStart).ToQuat();
 	const FQuat NewDir = FRotationMatrix::MakeFromX(Focus - NewEye).ToQuat();
 	const FQuat DeltaQuat = NewDir * OldDir.Inverse();
-	const FQuat NewRigQuat = DeltaQuat * RigTransformStart.GetRotation();
+
+	const FVector ToPlanetLocal = RigTransformStart.InverseTransformVector(Focus - EyeStart);
+	const FQuat NewRigQuat = USharedMathLibrary::MakeRollFreeRigRotation(ToPlanetLocal, Focus - NewEye);
 
 	// Place the rig so the eye lands exactly at NewEye with the new rotation.
 	const FVector EyeLocal = RigTransformStart.InverseTransformPosition(EyeStart);
@@ -321,7 +324,11 @@ void AMyPlayerController::LockOnto(APlanetBase* Planet)
 
 	if (CinematicComponent)
 	{
-		CinematicComponent->StartAutoZoom(Planet, static_cast<float>(MinOrbitDistance));
+		const double PlanetScreenRadius = ZoomFill * ScreenHalfHeight;
+		const FVector2D CornerOffset(
+			-FMath::Max(0.0, ScreenHalfWidth - PlanetScreenRadius - CornerMargin),
+			-FMath::Max(0.0, ScreenHalfHeight - PlanetScreenRadius - CornerMargin));
+		CinematicComponent->StartAutoZoom(Planet, static_cast<float>(MinOrbitDistance), CornerOffset);
 	}
 }
 
@@ -356,7 +363,9 @@ void AMyPlayerController::SetNDisplayReferences(USceneComponent* InEye,
 	// The screen's size is stored in its scale (in cm): half its height is half the Z scale.
 	if (InScreen)
 	{
-		ScreenHalfHeight = InScreen->GetComponentScale().Z * 0.5;
+		const FVector ScreenScale = InScreen->GetComponentScale();
+		ScreenHalfHeight = ScreenScale.Z * 0.5;
+		ScreenHalfWidth = ScreenScale.Y * 0.5;
 	}
 	else
 	{
@@ -377,5 +386,11 @@ void AMyPlayerController::SetNDisplayReferences(USceneComponent* InEye,
 	if (CinematicComponent)
 	{
 		CinematicComponent->ViewPoint = ViewPoint;
+		CinematicComponent->ScreenCenter = ScreenCenter;
+	}
+
+	if (const APawn* Rig = GetPawn())
+	{
+		const FTransform RigTransform = Rig->GetActorTransform();
 	}
 }

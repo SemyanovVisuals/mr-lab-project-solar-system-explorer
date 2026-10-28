@@ -3,6 +3,7 @@
 
 #include "CinematicCameraComponent.h"
 #include "PlanetBase.h"
+#include "SharedMathLibrary.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
@@ -104,6 +105,21 @@ bool UCinematicCameraComponent::BeginCinematic(APlanetBase* Planet, EMode NewMod
 		? Pawn->GetActorTransform().InverseTransformPosition(ViewPoint->GetComponentLocation())
 		: FVector::ZeroVector;
 
+	ViewLocalRotation = FQuat::Identity;
+	if (ScreenCenter)
+	{
+		const FVector AimWorld = ScreenCenter->GetComponentLocation()
+			+ ScreenCenter->GetRightVector() * AimOffset.X
+			+ ScreenCenter->GetUpVector() * AimOffset.Y;
+
+		const FVector AimLocal = Pawn->GetActorTransform().InverseTransformPosition(AimWorld);
+		const FVector ViewDirLocal = (AimLocal - EyeLocalOffset).GetSafeNormal();
+		if (!ViewDirLocal.IsNearlyZero())
+		{
+			ViewLocalRotation = FRotationMatrix::MakeFromX(ViewDirLocal).ToQuat();
+		}
+	}
+
 	const FVector EyeLocation = Pawn->GetActorTransform().TransformPosition(EyeLocalOffset);
 	const FVector Offset = EyeLocation - Planet->GetActorLocation();
 
@@ -128,8 +144,9 @@ bool UCinematicCameraComponent::BeginCinematic(APlanetBase* Planet, EMode NewMod
 	return true;
 }
 
-void UCinematicCameraComponent::StartAutoZoom(APlanetBase* Planet, float TargetDistance)
+void UCinematicCameraComponent::StartAutoZoom(APlanetBase* Planet, float TargetDistance, FVector2D ScreenAimOffset)
 {
+	AimOffset = ScreenAimOffset;
 	if (BeginCinematic(Planet, EMode::AutoZoom))
 	{
 		EndDistance = TargetDistance;
@@ -138,6 +155,7 @@ void UCinematicCameraComponent::StartAutoZoom(APlanetBase* Planet, float TargetD
 
 void UCinematicCameraComponent::StartFlyBy(APlanetBase* Planet, float ReturnDistance)
 {
+	AimOffset = FVector2D::ZeroVector;
 	if (BeginCinematic(Planet, EMode::FlyBy))
 	{
 		EndDistance = ReturnDistance;
@@ -177,10 +195,20 @@ void UCinematicCameraComponent::ApplyCamera(const FVector& Center, double Distan
 		: FRotationMatrix::MakeFromXY(Forward, RightSign * BasisAxis).ToQuat();
 	const FQuat NewQuat = FQuat::Slerp(WorldFrame, OrbitFrame, FMath::Clamp(FrameBlend, 0.0, 1.0));
 
+	const FQuat RollFreeRig = USharedMathLibrary::MakeRollFreeRigRotation(ViewLocalRotation.GetForwardVector(), NewQuat.GetForwardVector());
+
+	const FQuat TargetRigQuat = (OrbitAxis == EOrbitAxis::Z)
+		? RollFreeRig
+		: FQuat::Slerp(RollFreeRig, NewQuat * ViewLocalRotation.Inverse(), FMath::Clamp(FrameBlend, 0.0, 1.0));
+
 	// Turn smoothly from the rotation at the start of the cinematic, instead of snapping.
 	const float AlignAlpha = (AlignDuration > 0.0f) ? FMath::Clamp(Elapsed / AlignDuration, 0.0f, 1.0f) : 1.0f;
 	const float AlignEased = FMath::InterpEaseInOut(0.0f, 1.0f, AlignAlpha, 2.0f);
-	const FQuat FinalQuat = FQuat::Slerp(StartRigRotation, NewQuat, AlignEased);
+
+	const FRotator StartRot = StartRigRotation.Rotator();
+	const FRotator TargetRot = TargetRigQuat.Rotator();
+	const FRotator FinalRot = StartRot + (TargetRot - StartRot).GetNormalized() * AlignEased;
+	const FQuat FinalQuat = FinalRot.Quaternion();
 
 	// NewLocation is where the eye should be; place the rig so the eye lands there.
 	const FTransform NewRigTransform(FinalQuat, FVector::ZeroVector, Pawn->GetActorScale3D());
