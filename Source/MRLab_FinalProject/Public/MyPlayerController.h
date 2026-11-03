@@ -33,6 +33,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void HandleMovementLock();
 
+	UFUNCTION(BlueprintCallable, Category = "Targeting")
+	void HandleQuizAbandoned();
+
 	// Called from BeginPlay in Blueprint with the nDisplay components.
 	UFUNCTION(BlueprintCallable, Category = "Setup")
 	void SetNDisplayReferences(USceneComponent* InEye, USceneComponent* InScreenCenter, USceneComponent* InScreen);
@@ -113,17 +116,17 @@ public:
 	// ---------- Free look settings ----------
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Free Look")
-	double YawRate = 120.0;
+	double YawRate = 20.0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Free Look")
-	double PitchRate = 120.0;
+	double PitchRate = 20.0;
 
 	// ---------- Targeting settings ----------
 
 	// How much of the screen height the planet fills at the minimum zoom distance (0–1).
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting",
 		meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
-	double ZoomFill = 0.8;
+	double ZoomFill = 0.4;
 
 	// Half the physical screen height, set in BeginPlay from the nDisplay screen.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting")
@@ -133,7 +136,7 @@ public:
 	double ScreenHalfWidth = 250.0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting")
-	double CornerMargin = 75.0;
+	double CornerMargin = 50.0;
 
 	// Half-angle of the selection cone, in degrees.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting")

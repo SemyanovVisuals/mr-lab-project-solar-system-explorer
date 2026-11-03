@@ -56,9 +56,10 @@ void UCinematicCameraComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	Elapsed += DeltaTime;
 	const FVector Center = Planet->GetActorLocation(); // follows the planet if it moves
 
-	if (Mode == EMode::AutoZoom)
+	if (Mode == EMode::AutoZoom || Mode == EMode::Recenter)
 	{
-		const double Alpha = FMath::Clamp(Elapsed / AutoZoomDuration, 0.0f, 1.0f);
+		const float Duration = (Mode == EMode::Recenter) ? AlignDuration : AutoZoomDuration;
+		const double Alpha = FMath::Clamp(Elapsed / FMath::Max(KINDA_SMALL_NUMBER, Duration), 0.0f, 1.0f);
 		const double Eased = FMath::InterpEaseInOut(0.0, 1.0, static_cast<float>(Alpha), 2.0f);
 
 		ApplyCamera(Center, FMath::Lerp(StartDistance, EndDistance, Eased),
@@ -227,6 +228,7 @@ void UCinematicCameraComponent::Finish()
 
 	if (FinishedMode == EMode::AutoZoom)    OnAutoZoomFinished.Broadcast();
 	else if (FinishedMode == EMode::FlyBy)  OnFlyByFinished.Broadcast();
+	else if (FinishedMode == EMode::Recenter) OnRecenterFinished.Broadcast();
 }
 
 void UCinematicCameraComponent::GetOrbitBasis(FVector& OutU, FVector& OutV, FVector& OutAxis) const
@@ -242,5 +244,14 @@ void UCinematicCameraComponent::GetOrbitBasis(FVector& OutU, FVector& OutV, FVec
 	default: // Z
 		OutU = FVector::XAxisVector; OutV = FVector::YAxisVector; OutAxis = FVector::ZAxisVector;
 		break;
+	}
+}
+
+void UCinematicCameraComponent::StartRecenter(APlanetBase* Planet)
+{
+	AimOffset = FVector2D::ZeroVector;
+	if (BeginCinematic(Planet, EMode::Recenter))
+	{
+		EndDistance = StartDistance;
 	}
 }

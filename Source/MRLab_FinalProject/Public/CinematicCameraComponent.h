@@ -38,6 +38,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Cinematic")
 	bool IsCinematicActive() const { return Mode != EMode::None; }
 
+	UFUNCTION(BlueprintCallable, Category = "Cinematic")
+	void StartRecenter(APlanetBase* Planet);
+
+	UPROPERTY(BlueprintAssignable, Category = "Cinematic")
+	FOnCinematicFinished OnRecenterFinished;
+
 	UPROPERTY(BlueprintAssignable, Category = "Cinematic")
 	FOnCinematicFinished OnAutoZoomFinished;
 
@@ -66,7 +72,7 @@ public:
 
 	// Height of the fly-by orbit above the planet's equator, in degrees.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cinematic|Fly-By")
-	float FlyByElevation = 10.0f;
+	float FlyByElevation = 100.0f;
 
 	// How far the view turns away from the planet's center, toward the direction of travel.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cinematic|Fly-By")
@@ -92,7 +98,7 @@ protected:
 	virtual void BeginPlay() override;
 
 private:	
-	enum class EMode : uint8 { None, AutoZoom, FlyBy };
+	enum class EMode : uint8 { None, AutoZoom, FlyBy, Recenter };
 
 	EMode Mode = EMode::None;
 	TWeakObjectPtr<APlanetBase> TargetPlanet;

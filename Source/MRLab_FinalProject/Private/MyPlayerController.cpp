@@ -352,7 +352,16 @@ void AMyPlayerController::HandleMovementLock()
 	bMovementLocked = !bMovementLocked;
 }
 
-// ---------- Setup ----------
+// ---------- Quiz Logic -------------
+
+void AMyPlayerController::HandleQuizAbandoned()
+{
+	if (CinematicComponent && LockedPlanet) {
+		CinematicComponent->StartRecenter(LockedPlanet);
+	}
+}
+
+// ---------- Setup ------------------
 
 void AMyPlayerController::SetNDisplayReferences(USceneComponent* InEye,
 	USceneComponent* InScreenCenter, USceneComponent* InScreen)
