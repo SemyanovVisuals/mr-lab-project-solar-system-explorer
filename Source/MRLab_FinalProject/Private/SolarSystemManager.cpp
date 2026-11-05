@@ -107,9 +107,13 @@ void ASolarSystemManager::AdoptPlanetDecorations(APlanetBase* Planet)
 	}
 }
 
-void ASolarSystemManager::SetSimulatedOffsetYears(float OffsetYears)
+void ASolarSystemManager::SetSimulatedOffsetYears(double OffsetYears)
 {
-	const double OffsetDays = static_cast<double>(OffsetYears) * 365.25;
+	OffsetYears = FMath::Clamp(OffsetYears, -MaxOffsetYears, MaxOffsetYears);
+	if (OffsetYears == CurrentOffsetYears) return; // e.g. holding scroll at the limit
+	CurrentOffsetYears = OffsetYears;
+
+	const double OffsetDays = OffsetYears * 365.25;
     const astro_time_t SimulatedTime = Astronomy_AddDays(BaseAstroTime, OffsetDays);
     UpdatePositions(SimulatedTime);
 }

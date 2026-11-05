@@ -36,6 +36,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Targeting")
 	void HandleQuizAbandoned();
 
+	// Called from the IA_TimeForward (+1) / IA_TimeBackward (-1) Triggered events (Elapsed Seconds).
+	UFUNCTION(BlueprintCallable, Category = "Time")
+	void HandleTimeScroll(float Direction, float ElapsedSeconds);
+
 	// Called from BeginPlay in Blueprint with the nDisplay components.
 	UFUNCTION(BlueprintCallable, Category = "Setup")
 	void SetNDisplayReferences(USceneComponent* InEye, USceneComponent* InScreenCenter, USceneComponent* InScreen);
@@ -120,6 +124,20 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Free Look")
 	double PitchRate = 20.0;
+
+	// ---------- Time scroll settings ----------
+
+	// Scroll speed when the button is first pressed, in years per second (default: 1 day/s).
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time|Scroll")
+	double TimeScrollStartRate = 1.0 / 365.25;
+
+	// The speed doubles every this many seconds of holding.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time|Scroll", meta = (ClampMin = "0.01"))
+	double TimeScrollDoublingTime = 0.5;
+
+	// Maximum scroll speed, in years per second.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time|Scroll")
+	double TimeScrollMaxRate = 10.0;
 
 	// ---------- Targeting settings ----------
 

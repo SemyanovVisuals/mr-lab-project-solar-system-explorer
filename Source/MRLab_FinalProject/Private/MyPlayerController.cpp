@@ -361,6 +361,24 @@ void AMyPlayerController::HandleQuizAbandoned()
 	}
 }
 
+// ---------- Time scroll ------------
+
+void AMyPlayerController::HandleTimeScroll(float Direction, float ElapsedSeconds)
+{
+	if (!IsNotCinematic() || !SolarSystem)
+	{
+		return; // no input during cinematics
+	}
+
+	// Exponential ramp: the range spans days to decades, so the speed doubles while held.
+	const double Rate = FMath::Min(
+		TimeScrollStartRate * FMath::Pow(2.0, ElapsedSeconds / TimeScrollDoublingTime),
+		TimeScrollMaxRate);
+
+	const double Step = FMath::Sign(Direction) * Rate * GetWorld()->GetDeltaSeconds();
+	SolarSystem->SetSimulatedOffsetYears(SolarSystem->GetSimulatedOffsetYears() + Step);
+}
+
 // ---------- Setup ------------------
 
 void AMyPlayerController::SetNDisplayReferences(USceneComponent* InEye,
