@@ -7,9 +7,6 @@
 #include "Components/Button.h"
 #include "Kismet/GameplayStatics.h"
 
-// Total year span of the slider (centre ± HalfRange).
-static constexpr float HalfRange = 50.0f;
-
 // Short month name lookup.
 static const TCHAR* MonthNames[] = {
     TEXT("Jan"), TEXT("Feb"), TEXT("Mar"), TEXT("Apr"),
@@ -32,15 +29,13 @@ void UTimeSliderWidget::NativeConstruct()
         UE_LOG(LogTemp, Warning, TEXT("TimeSliderWidget: ASolarSystemManager not found in level."));
     }
 
-    // Initialise slider.
+    // Initialise slider as a read-only indicator.
     if (TimeSlider)
     {
         TimeSlider->SetMinValue(0.0f);
         TimeSlider->SetMaxValue(1.0f);
-        // One notch per year: 100-year total span → step = 0.01.
-        TimeSlider->SetStepSize(0.01f);
         TimeSlider->SetValue(0.5f);
-        TimeSlider->OnValueChanged.AddDynamic(this, &UTimeSliderWidget::OnSliderValueChanged);
+        TimeSlider->SetLocked(true);
     }
 
     // Initialise Go to Now button.
@@ -50,48 +45,57 @@ void UTimeSliderWidget::NativeConstruct()
     }
 
     // Show today's date immediately.
-    UpdateDateDisplay(0.0f);
+    UpdateDateDisplay(0.0, true);
 }
 
-void UTimeSliderWidget::OnSliderValueChanged(float Value)
+void UTimeSliderWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
+    Super::NativeTick(MyGeometry, InDeltaTime);
+
     if (!Manager.IsValid()) return;
 
-    // Map [0, 1] → [−HalfRange, +HalfRange] years.
-    const float OffsetYears = (Value - 0.5f) * (HalfRange * 2.0f);
-    Manager->SetSimulatedOffsetYears(OffsetYears);
-    UpdateDateDisplay(OffsetYears);
+    const double OffsetYears = Manager->GetSimulatedOffsetYears();
+    const double Speed = InDeltaTime > 0.0f ? FMath::Abs(OffsetYears - LastOffsetYears) / InDeltaTime : 0.0;
+    LastOffsetYears = OffsetYears;
+
+    // Map [−Max, +Max] years → [0, 1].
+    if (TimeSlider)
+    {
+        TimeSlider->SetValue(0.5f + static_cast<float>(OffsetYears / (2.0 * ASolarSystemManager::MaxOffsetYears)));
+    }
+
+    // Minutes are only a blur when scrolling fast.
+    UpdateDateDisplay(OffsetYears, Speed < TimeDisplaySpeedThreshold);
 }
 
 void UTimeSliderWidget::OnGoToNowClicked()
 {
-    // SetValue fires OnValueChanged, which updates planets + label.
-    if (TimeSlider)
-    {
-        TimeSlider->SetValue(0.5f);
-    }
-    // If slider was already at 0.5 the delegate may not fire — force it.
+    // NativeTick picks up the new offset and updates slider + label.
     if (Manager.IsValid())
     {
-        Manager->SetSimulatedOffsetYears(0.0f);
+        Manager->SetSimulatedOffsetYears(0.0);
     }
-    UpdateDateDisplay(0.0f);
 }
 
-void UTimeSliderWidget::UpdateDateDisplay(float OffsetYears)
+void UTimeSliderWidget::UpdateDateDisplay(double OffsetYears, bool bShowTime)
 {
     if (!SimulatedDateText) return;
 
-    const double OffsetDays = static_cast<double>(OffsetYears) * 365.25;
+    const double OffsetDays = OffsetYears * 365.25;
     const FDateTime SimDate = BaseDateTimeUtc + FTimespan::FromDays(OffsetDays);
 
     const int32 Month = FMath::Clamp(SimDate.GetMonth(), 1, 12);
-    const FString Label = FString::Printf(
+    FString Label = FString::Printf(
         TEXT("%s %d, %d"),
         MonthNames[Month - 1],
         SimDate.GetDay(),
         SimDate.GetYear()
     );
+
+    if (bShowTime)
+    {
+        Label += FString::Printf(TEXT("  %02d:%02d UTC"), SimDate.GetHour(), SimDate.GetMinute());
+    }
 
     SimulatedDateText->SetText(FText::FromString(Label));
 }

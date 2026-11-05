@@ -21,10 +21,15 @@ class MRLAB_FINALPROJECT_API ASolarSystemManager : public AActor
 public:
 	ASolarSystemManager();
 
-	// Called by the time slider widget when the user drags the slider.
-	// OffsetYears: 0 = today, -100 = 100 years in the past, +100 = 100 years in the future.
+	// Limit of the simulated time offset, in years either side of today.
+	static constexpr double MaxOffsetYears = 50.0;
+
+	// OffsetYears: 0 = today, negative = past, positive = future. Clamped to ±MaxOffsetYears.
 	UFUNCTION(BlueprintCallable, Category = "Solar System")
-	void SetSimulatedOffsetYears(float OffsetYears);
+	void SetSimulatedOffsetYears(double OffsetYears);
+
+	UFUNCTION(BlueprintPure, Category = "Solar System")
+	double GetSimulatedOffsetYears() const { return CurrentOffsetYears; }
 
 	// Widget Blueprint class to instantiate. Set this in BP_SolarSystemManager class defaults.
 	UPROPERTY(EditDefaultsOnly, Category = "Solar System|UI")
@@ -40,6 +45,9 @@ public:
 
 private:
 	astro_time_t BaseAstroTime;
+
+	// Double: float years are only accurate to ~2 minutes at the ±50 yr ends.
+	double CurrentOffsetYears = 0.0;
 
 	TWeakObjectPtr<UUserWidget> SliderWidget;
 

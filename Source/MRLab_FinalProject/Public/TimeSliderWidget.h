@@ -12,15 +12,16 @@ class UButton;
 class ASolarSystemManager;
 
 /**
- * UMG widget — full-width time slider overlaid at the bottom of the screen.
+ * UMG widget — full-width time indicator overlaid at the bottom of the screen.
  *
+ * Time is scrolled with the IA_TimeForward / IA_TimeBackward input actions; this widget
+ * only mirrors the manager's simulated offset (read-only slider + date label).
  * Slider range:  0.0 = −50 years,  0.5 = today (baseline),  1.0 = +50 years.
- * Step size: 0.01 = 1 year per notch.
  *
  * BindWidget names (must match exactly in WBP_TimeSlider):
- *   TimeSlider       — USlider
- *   SimulatedDateText — UTextBlock  (shows the currently-selected date)
- *   GoToNowButton    — UButton      (resets slider to center / today)
+ *   TimeSlider       — USlider      (locked; shows the current offset)
+ *   SimulatedDateText — UTextBlock  (shows the currently-simulated date)
+ *   GoToNowButton    — UButton      (resets to today)
  */
 UCLASS()
 class MRLAB_FINALPROJECT_API UTimeSliderWidget : public UUserWidget
@@ -37,8 +38,13 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UButton* GoToNowButton;
 
+	// Above this scroll speed (years per second) the label drops the hh:mm. Default: 1 week/s.
+	UPROPERTY(EditAnywhere, Category = "Time")
+	double TimeDisplaySpeedThreshold = 7.0 / 365.25;
+
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 private:
 	TWeakObjectPtr<ASolarSystemManager> Manager;
@@ -46,12 +52,12 @@ private:
 	// Baseline UTC date captured when the widget is constructed (matches manager's BaseAstroTime).
 	FDateTime BaseDateTimeUtc;
 
-	UFUNCTION()
-	void OnSliderValueChanged(float Value);
+	// Offset seen on the previous tick — used to measure the scroll speed.
+	double LastOffsetYears = 0.0;
 
 	UFUNCTION()
 	void OnGoToNowClicked();
 
 	// Compute and set SimulatedDateText from an offset in years.
-	void UpdateDateDisplay(float OffsetYears);
+	void UpdateDateDisplay(double OffsetYears, bool bShowTime);
 };
