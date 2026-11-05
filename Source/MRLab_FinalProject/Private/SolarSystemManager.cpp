@@ -76,10 +76,28 @@ void ASolarSystemManager::CollectPlanets()
 		if (APlanetBase* Planet = Cast<APlanetBase>(Actor))
 		{
 			Planets.Add(Planet);
+			AdoptPlanetDecorations(Planet);
 		}
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("SolarSystemManager: found %d planet(s)."), Planets.Num());
+}
+
+// Components authored under a planet's ChildActorComponent in the manager BP (rings, lights)
+// stay at the origin, because only the child actor moves. Re-parent them onto the planet's mesh
+// so they inherit its position and scale.
+void ASolarSystemManager::AdoptPlanetDecorations(APlanetBase* Planet)
+{
+	USceneComponent* Anchor = Planet->GetParentComponent(); // the CAC that spawned this planet
+	if (!Anchor || !Planet->Mesh) return;
+
+	for (USceneComponent* Child : TArray<USceneComponent*>(Anchor->GetAttachChildren())) // copy: attaching mutates the array
+	{
+		if (Child->GetOwner() == this) // manager-owned only; skips the planet's own root
+		{
+			Child->AttachToComponent(Planet->Mesh, FAttachmentTransformRules::KeepWorldTransform);
+		}
+	}
 }
 
 void ASolarSystemManager::SetSimulatedOffsetYears(float OffsetYears)

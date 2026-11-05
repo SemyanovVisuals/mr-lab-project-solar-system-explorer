@@ -59,6 +59,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	void CollectPlanets();
+	void AdoptPlanetDecorations(APlanetBase* Planet);
 	void UpdatePositions(const astro_time_t& AstroTime);
 	void UpdateBody(APlanetBase* Planet, const astro_time_t& AstroTime);
 
