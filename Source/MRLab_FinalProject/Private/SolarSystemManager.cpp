@@ -146,8 +146,8 @@ void ASolarSystemManager::UpdateBody(APlanetBase* Planet, const astro_time_t& As
 	// Placed in the manager's frame, so a transform authored on the planet's ChildActorComponent can't move it off the plane.
 	Planet->SetActorLocation(GetActorTransform().TransformPosition(Position));
 
-	// Orient from the IAU rotation model: Z = north pole, X = prime meridian
-	// (the body's equator/EQJ equator node, rotated about the pole by the spin angle W).
+	// Orient from the IAU rotation model: Z = north pole, Y = prime meridian (the planet meshes have
+	// longitude 0 on local +Y), i.e. the body's equator/EQJ equator node rotated about the pole by the spin angle W.
 	astro_time_t Time = AstroTime;
 	const astro_axis_t Axis = Astronomy_RotationAxis(Body, &Time);
 	if (Axis.status == ASTRO_SUCCESS)
@@ -159,7 +159,7 @@ void ASolarSystemManager::UpdateBody(APlanetBase* Planet, const astro_time_t& As
 		const FVector Meridian = Node * FMath::Cos(W) + (Pole ^ Node) * FMath::Sin(W);
 
 		Planet->SetActorRotation(GetActorQuat() *
-			FRotationMatrix::MakeFromXZ(EqjToScene(EqjToEcl, Meridian), EqjToScene(EqjToEcl, Pole)).ToQuat());
+			FRotationMatrix::MakeFromYZ(EqjToScene(EqjToEcl, Meridian), EqjToScene(EqjToEcl, Pole)).ToQuat());
 	}
 
 	const double BodyRadiusKm = GetBodyRadiusKm(Body);
