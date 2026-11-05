@@ -55,3 +55,8 @@ float APlanetBase::GetViewDistanceForFill(float Fill, float ScreenHalfHeight, fl
 
 	return Radius / FMath::Sin(HalfAngle);
 }
+
+bool APlanetBase::isSun()
+{
+	return bIsSun;
+}

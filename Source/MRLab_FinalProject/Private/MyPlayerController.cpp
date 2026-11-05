@@ -27,7 +27,7 @@ void AMyPlayerController::Tick(float DeltaSeconds)
 void AMyPlayerController::UpdateHighlight()
 {
 	// During cinematics the view moves on its own: clear the highlight.
-	if (!IsNotCinematic())
+	if (!IsNotCinematic() || LockedPlanet)
 	{
 		SetHighlightedPlanet(nullptr);
 		return;
@@ -37,6 +37,10 @@ void AMyPlayerController::UpdateHighlight()
 		? SolarSystem->FindPlanetInCone(GetEyeLocation(), GetScreenDirection(),
 			static_cast<float>(ConeHalfAngle), static_cast<float>(TraceDistance))
 		: nullptr;
+	if (PlanetInView && PlanetInView->isSun())
+	{
+		return;
+	}
 
 	SetHighlightedPlanet(PlanetInView);
 }
@@ -365,7 +369,7 @@ void AMyPlayerController::HandleQuizAbandoned()
 
 void AMyPlayerController::HandleTimeScroll(float Direction, float ElapsedSeconds)
 {
-	if (!IsNotCinematic() || !SolarSystem)
+	if (LockedPlanet || !SolarSystem)
 	{
 		return; // no input during cinematics
 	}

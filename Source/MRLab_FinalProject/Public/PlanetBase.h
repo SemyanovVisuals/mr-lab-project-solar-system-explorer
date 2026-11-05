@@ -43,6 +43,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Planet")
 	float GetViewDistanceForFill(float Fill, float ScreenHalfHeight, float ViewerToScreenDistance) const;
 
+	UFUNCTION(BlueprintCallable, Category = "Planet")
+	bool isSun();
+
+	UPROPERTY(EditAnywhere, Category = "Planet")
+	bool bIsSun = false;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
