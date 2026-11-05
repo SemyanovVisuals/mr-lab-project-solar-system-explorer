@@ -22,6 +22,13 @@ static double GetBodyRadiusKm(astro_body_t Body)
     }
 }
 
+// Astronomy Engine reports EQJ (J2000 equatorial) vectors; the scene uses ecliptic axes with Y flipped.
+static FVector EqjToScene(const astro_rotation_t& EqjToEcl, const FVector& V)
+{
+	const astro_vector_t E = Astronomy_RotateVector(EqjToEcl, { ASTRO_SUCCESS, V.X, V.Y, V.Z });
+	return FVector(E.x, -E.y, E.z);
+}
+
 // Sets default values
 ASolarSystemManager::ASolarSystemManager()
 {
@@ -117,7 +124,11 @@ void ASolarSystemManager::UpdatePositions(const astro_time_t& AstroTime)
 
 void ASolarSystemManager::UpdateBody(APlanetBase* Planet, const astro_time_t& AstroTime)
 {
-	const astro_vector_t Vec = Astronomy_HelioVector(ToAstroBody(Planet->Body), AstroTime);
+	const astro_body_t Body = ToAstroBody(Planet->Body);
+	const astro_rotation_t EqjToEcl = Astronomy_Rotation_EQJ_ECL();
+
+	// Ecliptic coordinates, so dropping Z below flattens the orbits onto the ecliptic plane.
+	const astro_vector_t Vec = Astronomy_RotateVector(EqjToEcl, Astronomy_HelioVector(Body, AstroTime));
 	if (Vec.status != ASTRO_SUCCESS) return;
 
 	const double R_AU = FMath::Sqrt(Vec.x * Vec.x + Vec.y * Vec.y);
@@ -132,9 +143,26 @@ void ASolarSystemManager::UpdateBody(APlanetBase* Planet, const astro_time_t& As
 		0.0
 	);
 
-	Planet->SetActorRelativeLocation(Position);
+	// Placed in the manager's frame, so a transform authored on the planet's ChildActorComponent can't move it off the plane.
+	Planet->SetActorLocation(GetActorTransform().TransformPosition(Position));
 
-	const double BodyRadiusKm = GetBodyRadiusKm(ToAstroBody(Planet->Body));
+	// Orient from the IAU rotation model: Z = north pole, X = prime meridian
+	// (the body's equator/EQJ equator node, rotated about the pole by the spin angle W).
+	astro_time_t Time = AstroTime;
+	const astro_axis_t Axis = Astronomy_RotationAxis(Body, &Time);
+	if (Axis.status == ASTRO_SUCCESS)
+	{
+		const double RaRad = FMath::DegreesToRadians(Axis.ra * 15.0); // ra is in hours
+		const double W = FMath::DegreesToRadians(Axis.spin);
+		const FVector Pole(Axis.north.x, Axis.north.y, Axis.north.z);
+		const FVector Node(-FMath::Sin(RaRad), FMath::Cos(RaRad), 0.0);
+		const FVector Meridian = Node * FMath::Cos(W) + (Pole ^ Node) * FMath::Sin(W);
+
+		Planet->SetActorRotation(GetActorQuat() *
+			FRotationMatrix::MakeFromXZ(EqjToScene(EqjToEcl, Meridian), EqjToScene(EqjToEcl, Pole)).ToQuat());
+	}
+
+	const double BodyRadiusKm = GetBodyRadiusKm(Body);
 	if (BodyRadiusKm > 0.0 && Planet->Mesh)
 	{
 		const double RadiusRatio = BodyRadiusKm / SUN_RADIUS_KM;
