@@ -12,6 +12,7 @@ extern "C"
 #include "SolarSystemManager.generated.h"
 
 class UTimeSliderWidget;
+class UUserWidget;
 
 UCLASS()
 class MRLAB_FINALPROJECT_API ASolarSystemManager : public AActor
@@ -42,6 +43,13 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (BlueprintPure = false), Category = "Solar System")
 	APlanetBase* FindPlanetInCone(FVector Origin, FVector Direction,
 	float ConeHalfAngleDeg, float MaxDistance) const;
+
+#if WITH_EDITOR
+	// Generates /Game/Materials/M_NeonArrows from Shaders/NeonArrows.hlsl and sorts the VisualizationPlane
+	// below the arrows. Press again after editing the shader file, then save the level.
+	UFUNCTION(CallInEditor, Category = "Solar System|Arrows")
+	void BuildArrowAssets();
+#endif
 
 private:
 	astro_time_t BaseAstroTime;

@@ -1,8 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "SolarSystemManager.h"
+#include "PlanetArrowsComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+
+#if WITH_EDITOR
+#include "NeonArrowMaterialBuilder.h"
+#include "EngineUtils.h"
+#endif
 
 static double GetBodyRadiusKm(astro_body_t Body)
 {
@@ -69,7 +75,63 @@ void ASolarSystemManager::BeginPlay()
 			}
 		}
 	}
+
+	// Neon arrows to the locked planets. Created here unless the Blueprint already has one (to tune it in Details).
+	if (!FindComponentByClass<UPlanetArrowsComponent>())
+	{
+		UPlanetArrowsComponent* Arrows = NewObject<UPlanetArrowsComponent>(this, TEXT("PlanetArrows"));
+		Arrows->SetupAttachment(GetRootComponent());
+		Arrows->RegisterComponent();
+	}
 }
+
+#if WITH_EDITOR
+void ASolarSystemManager::BuildArrowAssets()
+{
+	if (!FNeonArrowMaterialBuilder::BuildOrUpdate())
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	bool bFoundPlane = false;
+	for (TActorIterator<AActor> It(World); It; ++It)
+	{
+		if (It->GetActorLabel() != NeonArrows::PlaneActorLabel)
+		{
+			continue;
+		}
+
+		TArray<UPrimitiveComponent*> Primitives;
+		It->GetComponents(Primitives);
+		for (UPrimitiveComponent* Primitive : Primitives)
+		{
+			if (Primitive->TranslucencySortPriority != NeonArrows::PlaneSortPriority)
+			{
+				Primitive->Modify();
+				Primitive->SetTranslucentSortPriority(NeonArrows::PlaneSortPriority);
+			}
+		}
+		bFoundPlane = true;
+	}
+
+	if (bFoundPlane)
+	{
+		UE_LOG(LogTemp, Log, TEXT("NeonArrows: %s sort priority set to %d. Save the level to keep it."),
+			NeonArrows::PlaneActorLabel, NeonArrows::PlaneSortPriority);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NeonArrows: no actor labelled '%s' in this level. Set its Translucency Sort Priority to %d by hand."),
+			NeonArrows::PlaneActorLabel, NeonArrows::PlaneSortPriority);
+	}
+}
+#endif
 
 void ASolarSystemManager::CollectPlanets()
 {

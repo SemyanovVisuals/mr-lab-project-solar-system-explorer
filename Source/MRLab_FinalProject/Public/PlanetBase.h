@@ -49,6 +49,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Planet")
 	bool bIsSun = false;
 
+	// Set once the planet's quiz is solved. Locked planets get a neon arrow from the Sun (UPlanetArrowsComponent).
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet|Quiz")
+	bool bIsUnlocked = false;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

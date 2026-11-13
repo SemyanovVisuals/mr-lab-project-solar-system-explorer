@@ -1,6 +1,7 @@
 // PlanetBase.cpp
 #include "PlanetBase.h"
 #include "Components/StaticMeshComponent.h"
+#include "Materials/MaterialInterface.h"
 
 APlanetBase::APlanetBase()
 {
