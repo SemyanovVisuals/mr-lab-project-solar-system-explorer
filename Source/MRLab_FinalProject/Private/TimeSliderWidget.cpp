@@ -4,7 +4,6 @@
 #include "SolarSystemManager.h"
 #include "Components/Slider.h"
 #include "Components/TextBlock.h"
-#include "Components/Button.h"
 #include "Kismet/GameplayStatics.h"
 
 // Short month name lookup.
@@ -38,12 +37,6 @@ void UTimeSliderWidget::NativeConstruct()
         TimeSlider->SetLocked(true);
     }
 
-    // Initialise Go to Now button.
-    if (GoToNowButton)
-    {
-        GoToNowButton->OnClicked.AddDynamic(this, &UTimeSliderWidget::OnGoToNowClicked);
-    }
-
     // Show today's date immediately.
     UpdateDateDisplay(0.0, true);
 }
@@ -66,15 +59,6 @@ void UTimeSliderWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 
     // Minutes are only a blur when scrolling fast.
     UpdateDateDisplay(OffsetYears, Speed < TimeDisplaySpeedThreshold);
-}
-
-void UTimeSliderWidget::OnGoToNowClicked()
-{
-    // NativeTick picks up the new offset and updates slider + label.
-    if (Manager.IsValid())
-    {
-        Manager->SetSimulatedOffsetYears(0.0);
-    }
 }
 
 void UTimeSliderWidget::UpdateDateDisplay(double OffsetYears, bool bShowTime)

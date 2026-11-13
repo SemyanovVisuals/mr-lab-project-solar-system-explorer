@@ -40,6 +40,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Time")
 	void HandleTimeScroll(float Direction, float ElapsedSeconds);
 
+	// Called from the IA_TimeForward (+1) / IA_TimeBackward (-1) events:
+	// Started -> Held = true, Completed and Canceled -> Held = false.
+	// Both buttons held at once jumps to "now".
+	UFUNCTION(BlueprintCallable, Category = "Time")
+	void SetTimeButtonHeld(float Direction, bool bHeld);
+
+	// Same as the "Go to Now" button: back to the current date.
+	UFUNCTION(BlueprintCallable, Category = "Time")
+	void ResetTimeToNow();
+
 	// Called from BeginPlay in Blueprint with the nDisplay components.
 	UFUNCTION(BlueprintCallable, Category = "Setup")
 	void SetNDisplayReferences(USceneComponent* InEye, USceneComponent* InScreenCenter, USceneComponent* InScreen);
@@ -76,6 +86,17 @@ public:
 	// The planet currently in the selection cone (set by the highlight logic).
 	UPROPERTY(BlueprintReadWrite, Category = "State")
 	APlanetBase* HighlightedPlanet = nullptr;
+
+	// Time buttons currently held (set through SetTimeButtonHeld).
+	UPROPERTY(BlueprintReadOnly, Category = "State")
+	bool bTimeBackHeld = false;
+
+	UPROPERTY(BlueprintReadOnly, Category = "State")
+	bool bTimeFwdHeld = false;
+
+	// True after a jump to "now", until both time buttons are released.
+	UPROPERTY(BlueprintReadOnly, Category = "State")
+	bool bTimeScrollSuppressed = false;
 
 	// ---------- Fly settings ----------
 

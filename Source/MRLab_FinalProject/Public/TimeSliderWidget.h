@@ -8,7 +8,6 @@
 
 class USlider;
 class UTextBlock;
-class UButton;
 class ASolarSystemManager;
 
 /**
@@ -16,13 +15,12 @@ class ASolarSystemManager;
  *
  * Time is scrolled with the IA_TimeForward / IA_TimeBackward input actions; this widget
  * only mirrors the manager's simulated offset (read-only slider + date label).
+ * Pressing both buttons at once jumps back to today.
  * Slider range:  0.0 = −50 years,  0.5 = today (baseline),  1.0 = +50 years.
  *
  * BindWidget names (must match exactly in WBP_TimeSlider):
  *   TimeSlider       — USlider      (locked; shows the current offset)
- *   SimulatedDateText — UTextBlock  (shows the currently-simulated date)
- *   GoToNowButton    — UButton      (resets to today)
- */
+ *   SimulatedDateText — UTextBlock  (shows the currently-simulated date) */
 UCLASS()
 class MRLAB_FINALPROJECT_API UTimeSliderWidget : public UUserWidget
 {
@@ -34,9 +32,6 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* SimulatedDateText;
-
-	UPROPERTY(meta = (BindWidget))
-	UButton* GoToNowButton;
 
 	// Above this scroll speed (years per second) the label drops the hh:mm. Default: 1 week/s.
 	UPROPERTY(EditAnywhere, Category = "Time")
@@ -54,9 +49,6 @@ private:
 
 	// Offset seen on the previous tick — used to measure the scroll speed.
 	double LastOffsetYears = 0.0;
-
-	UFUNCTION()
-	void OnGoToNowClicked();
 
 	// Compute and set SimulatedDateText from an offset in years.
 	void UpdateDateDisplay(double OffsetYears, bool bShowTime);

@@ -374,6 +374,11 @@ void AMyPlayerController::HandleTimeScroll(float Direction, float ElapsedSeconds
 		return; // no input during cinematics
 	}
 
+	if (bTimeScrollSuppressed)
+	{
+		return; // just jumped to "now": wait until both buttons are released
+	}
+
 	// Exponential ramp: the range spans days to decades, so the speed doubles while held.
 	const double Rate = FMath::Min(
 		TimeScrollStartRate * FMath::Pow(2.0, ElapsedSeconds / TimeScrollDoublingTime),
@@ -381,6 +386,34 @@ void AMyPlayerController::HandleTimeScroll(float Direction, float ElapsedSeconds
 
 	const double Step = FMath::Sign(Direction) * Rate * GetWorld()->GetDeltaSeconds();
 	SolarSystem->SetSimulatedOffsetYears(SolarSystem->GetSimulatedOffsetYears() + Step);
+}
+
+void AMyPlayerController::SetTimeButtonHeld(float Direction, bool bHeld)
+{
+	(Direction < 0.0f ? bTimeBackHeld : bTimeFwdHeld) = bHeld;
+
+	if (bTimeBackHeld && bTimeFwdHeld)
+	{
+		// Once, when the second button goes down.
+		ResetTimeToNow();
+
+		// Otherwise the button still held would keep scrolling at its ramped-up speed.
+		bTimeScrollSuppressed = true;
+	}
+	else if (!bTimeBackHeld && !bTimeFwdHeld)
+	{
+		bTimeScrollSuppressed = false;
+	}
+}
+
+void AMyPlayerController::ResetTimeToNow()
+{
+	if (LockedPlanet || !SolarSystem)
+	{
+		return; // same rule as scrolling
+	}
+
+	SolarSystem->SetSimulatedOffsetYears(0.0);
 }
 
 // ---------- Setup ------------------
