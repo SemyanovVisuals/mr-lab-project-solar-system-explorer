@@ -110,11 +110,11 @@ UMaterial* FNeonArrowMaterialBuilder::BuildOrUpdate()
 	AddCustomInput(Custom, NeonArrows::AxisXParam, AddVectorParam(Material, NeonArrows::AxisXParam, FLinearColor(1, 0, 0, 0), Y += 100));
 	AddCustomInput(Custom, NeonArrows::AxisYParam, AddVectorParam(Material, NeonArrows::AxisYParam, FLinearColor(0, 1, 0, 0), Y += 100));
 	AddCustomInput(Custom, NeonArrows::SunParam, AddVectorParam(Material, NeonArrows::SunParam, FLinearColor(0, 0, 0, 0), Y += 100));
-	AddCustomInput(Custom, NeonArrows::StyleParam, AddVectorParam(Material, NeonArrows::StyleParam, FLinearColor(1.0f, 2.5f, 10, 0), Y += 100));
-	AddCustomInput(Custom, NeonArrows::ColorParam, AddVectorParam(Material, NeonArrows::ColorParam, FLinearColor(0.55f, 0.06f, 0.05f, 1.0f), Y += 100));
+	AddCustomInput(Custom, NeonArrows::StyleParam, AddVectorParam(Material, NeonArrows::StyleParam, FLinearColor(1.0f, 2.5f, 6, 0), Y += 100));
+	AddCustomInput(Custom, NeonArrows::ColorParam, AddVectorParam(Material, NeonArrows::ColorParam, FLinearColor(0.81f, 0.37f, 0.07f, 1.0f), Y += 100));
 	AddCustomInput(Custom, NeonArrows::IntensityParam, AddScalarParam(Material, NeonArrows::IntensityParam, 1.2f, Y += 100));
 	AddCustomInput(Custom, NeonArrows::GlowStrengthParam, AddScalarParam(Material, NeonArrows::GlowStrengthParam, 0.15f, Y += 100));
-	AddCustomInput(Custom, NeonArrows::HeadAngleParam, AddScalarParam(Material, NeonArrows::HeadAngleParam, 28.0f, Y += 100));
+	AddCustomInput(Custom, NeonArrows::HeadAngleParam, AddScalarParam(Material, NeonArrows::HeadAngleParam, 25.0f, Y += 100));
 	for (int32 Slot = 0; Slot < NeonArrows::MaxArrows; ++Slot)
 	{
 		const FString Name = FString::Printf(TEXT("%s%d"), NeonArrows::SlotPrefix, Slot);

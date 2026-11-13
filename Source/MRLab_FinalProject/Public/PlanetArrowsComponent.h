@@ -54,8 +54,8 @@ public:
 	TSoftObjectPtr<UMaterialInterface> ArrowMaterial;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arrows")
-	// Muted version of the M_HighlightOverlay red, so the highlighted planet still reads first.
-	FLinearColor Color = FLinearColor(0.55f, 0.06f, 0.05f);
+	// The orange of the quiz UI (WBP_PlanetQuizUI).
+	FLinearColor Color = FLinearColor(0.81f, 0.37f, 0.07f);
 
 	// Emissive brightness. Bloom is off in this project, so the glow comes from the halo (GlowPx).
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arrows", meta = (ClampMin = "0.0"))
@@ -75,11 +75,11 @@ public:
 
 	// Length of the arrowhead arms, in screen pixels.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arrows", meta = (ClampMin = "0.0"))
-	float HeadPx = 10.0f;
+	float HeadPx = 6.0f;
 
 	// Angle between the shaft and each arrowhead arm.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arrows", meta = (ClampMin = "0.0", ClampMax = "89.0"))
-	float HeadAngleDeg = 28.0f;
+	float HeadAngleDeg = 25.0f;
 
 	// Space left between the arrow and the Sun's / planet's surface, in world units.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arrows", meta = (ClampMin = "0.0"))
