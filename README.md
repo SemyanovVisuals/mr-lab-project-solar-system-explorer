@@ -1,7 +1,7 @@
 # Solar System Explorer 🪐
 *MR Lab Project · TU Wien*
 
-Solar System Explorer is an interactive, stereoscopic 3D model of the Solar System built in Unreal Engine for the large curved LED wall of the TU Wien MR Lab. The planets sit at their real positions for the current date, computed from astronomical data, and the viewer can fly through the system, lock onto a planet for a closer look, scroll decades back and forth in time, and unlock planets by answering quiz questions.
+Solar System Explorer is an interactive, stereoscopic 3D model of the Solar System built in Unreal Engine for the large curved LED wall of the TU Wien MR Lab. The planets sit at their real positions for the current date, computed from astronomical data. The planets start out hidden under a dark layer, and neon arrows from the Sun guide the viewer to them. Flying up to a hidden planet and answering its quiz question reveals it, until the whole Solar System is uncovered. Along the way, the viewer can scroll decades back and forth in time to watch the planets move.
 
 > [!IMPORTANT]
 > **This project is designed to run on the stereoscopic LED wall in the [TU Wien MR Lab](https://www.vr.tuwien.ac.at/mrlab/).**
@@ -12,21 +12,23 @@ Solar System Explorer is an interactive, stereoscopic 3D model of the Solar Syst
 - Real-Time Planet Positions: Sun, Mercury, Venus, Earth, Moon, Mars, Jupiter, Saturn, Uranus and Neptune are placed using [Astronomy Engine](https://github.com/cosinekitty/astronomy), with orbits in the ecliptic plane and each planet oriented by its real pole and rotation.
 - Readable Scale: Distances and radii are compressed with tunable exponents, so the outer planets stay reachable and small bodies stay visible next to the Sun, while angles and phases remain exact.
 - Time Travel: Scroll up to 50 years into the past or future. The scroll speed doubles while held (from one day per second up to ten years per second), and pressing both time buttons jumps back to today. A time slider shows the simulated date.
-- Free Flight & Planet Orbiting: Fly freely through the system with speed ramping, or lock onto the highlighted planet to orbit and zoom around it.
-- Gaze-Based Selection: The planet in the viewer's line of sight through the screen is highlighted and can be locked with one button.
-- Cinematic Camera: Smooth auto-zoom when locking onto a planet, re-centering, and full fly-by orbits around a planet.
-- Planet Quiz: Answer questions about a planet to unlock it. Unlocked planets get a neon arrow from the Sun, drawn at a constant screen width by a custom HLSL shader.
+- Discover & Unlock Game Mode: Every planet starts locked and hidden under a dark layer. Neon arrows from the Sun point to the planets that are still locked, so the viewer can find them. Answering a planet's quiz question correctly unlocks it: its arrow fades out and the dark layer disappears, revealing the planet.
+- Neon Guide Arrows: Drawn at a constant screen width by a custom HLSL shader, so they stay readable at any zoom level.
+- Free Flight: Fly freely through the system with speed that ramps up while the stick is held, and an optional movement lock.
+- Gaze-Based Selection: The planet in the viewer's line of sight through the screen is highlighted. Locking onto it moves the viewer to face the planet and switches to quiz mode, where input is limited to answering the quiz.
+- Cinematic Camera: Smooth auto-zoom that brings the selected planet into view, re-centering when the quiz is closed, and fly-by orbits around a planet.
 - Head-Tracked LED Wall Rendering: nDisplay configuration with the tracked viewpoint and screen geometry driving off-axis projection, zoom distances and the selection cone.
 
 ### Controls (Gamepad)
 | Input | Action |
 | --- | --- |
-| Left stick | Fly forward/backward (or zoom when locked onto a planet) |
-| Right stick | Look around (or orbit the locked planet) |
-| Triggers | Lock/unlock the highlighted planet · toggle movement lock |
+| Left stick | Fly forward/backward |
+| Right stick | Look around |
+| Right trigger | Lock onto the highlighted planet and start its quiz |
+| Left trigger | Toggle movement lock |
 | LB / RB (hold) | Scroll time backward / forward |
 | LB + RB | Jump back to the current date |
-| D-pad up/down · A · B | Quiz: select answer · confirm · exit |
+| D-pad up/down · A · B | Quiz mode: select answer · confirm · exit |
 
 ### Getting Started
 1. Open `MRLab_FinalProject.uproject` with **Unreal Engine 5.6** (Windows or Linux) and let it compile the C++ module.
