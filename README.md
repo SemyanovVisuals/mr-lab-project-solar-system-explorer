@@ -12,11 +12,11 @@ Solar System Explorer is an interactive, stereoscopic 3D model of the Solar Syst
 - Real-Time Planet Positions: Sun, Mercury, Venus, Earth, Moon, Mars, Jupiter, Saturn, Uranus and Neptune are placed using [Astronomy Engine](https://github.com/cosinekitty/astronomy), with orbits in the ecliptic plane and each planet oriented by its real pole and rotation.
 - Readable Scale: Distances and radii are compressed with tunable exponents, so the outer planets stay reachable and small bodies stay visible next to the Sun, while angles and phases remain exact.
 - Time Travel: Scroll up to 50 years into the past or future. The scroll speed doubles while held (from one day per second up to ten years per second), and pressing both time buttons jumps back to today. A time slider shows the simulated date.
-- Discover & Unlock Game Mode: Every planet starts locked and hidden under a dark layer. Neon arrows from the Sun point to the planets that are still locked, so the viewer can find them. Answering a planet's quiz question correctly unlocks it: its arrow fades out and the dark layer disappears, revealing the planet.
+- Discover & Unlock Game Mode: Every planet starts locked and hidden under a dark layer. Neon arrows from the Sun point to the planets that are still locked, so the viewer can find them. Answering a planet's quiz question correctly unlocks it: its arrow fades out, the dark layer disappears to reveal the planet, and the camera flies around it in a cinematic fly-by. The goal is to reveal all the planets.
 - Neon Guide Arrows: Drawn at a constant screen width by a custom HLSL shader, so they stay readable at any zoom level.
 - Free Flight: Fly freely through the system with speed that ramps up while the stick is held, and an optional movement lock.
 - Gaze-Based Selection: The planet in the viewer's line of sight through the screen is highlighted. Locking onto it moves the viewer to face the planet and switches to quiz mode, where input is limited to answering the quiz.
-- Cinematic Camera: Smooth auto-zoom that brings the selected planet into view, re-centering when the quiz is closed, and fly-by orbits around a planet.
+- Cinematic Camera: Smooth auto-zoom that brings the selected planet into view, a fly-by around the planet after a correct answer, and re-centering when the quiz is closed.
 - Head-Tracked LED Wall Rendering: nDisplay configuration with the tracked viewpoint and screen geometry driving off-axis projection, zoom distances and the selection cone.
 
 ### Controls (Gamepad)
@@ -24,7 +24,7 @@ Solar System Explorer is an interactive, stereoscopic 3D model of the Solar Syst
 | --- | --- |
 | Left stick | Fly forward/backward |
 | Right stick | Look around |
-| Right trigger | Lock onto the highlighted planet and start its quiz |
+| Right trigger | Lock onto the highlighted planet and start its quiz (press again to unlock) |
 | Left trigger | Toggle movement lock |
 | LB / RB (hold) | Scroll time backward / forward |
 | LB + RB | Jump back to the current date |
